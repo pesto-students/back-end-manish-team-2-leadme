@@ -1,6 +1,7 @@
 //centralized routing, apply middleware for module routes
 
 const auth = require('../modules/auth/authRoutes');
+const loan = require('../modules/loan/loanRoutes')
 const protected = require('./protected');
 const authenticate = require('../middlewares/authenticate');
 const { buildRes } = require('../utils');
@@ -11,4 +12,5 @@ module.exports = app => {
     });
     app.use('/api/auth', auth);
     app.use('/api/protected', authenticate, protected);
+    app.use('/api/loan', authenticate, loan)
 };

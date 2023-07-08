@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const DataTypes = require('sequelize').DataTypes;
+const Loan = require('./index').loan;
 
-const User =  (sequelize, DataTypes) => {
+const User =  (sequelize) => {
     const User = sequelize.define( "user", {
         lastName: {
             type: DataTypes.STRING,
@@ -21,7 +23,29 @@ const User =  (sequelize, DataTypes) => {
         },
     }, {timestamps: true})
     
+    // User.associate = function(models) {
+    //     User.hasMany(models.Loan, {
+    //         foreignKey: 'borrowerUserId',
+    //         as: 'borrower',
+    //     });
 
+    //     User.hasMany(models.Loan, {
+    //         foreignKey: 'lenderUserId',
+    //         as: 'lender',
+    //     });
+    // };
+
+    // User.hasMany(Loan);
+
+    // User.associate = function(models) {
+    //     User.hasMany(models.Loan, {as: 'employes'})
+    // };
+
+    User.associate = models => {
+        User.hasMany(models.loan , {foreignKey: 'borrowerUserId', as: 'borrower'});
+        User.hasMany(models.loan , {foreignKey: 'lenderUserId', as: 'lender'});
+
+    }
     User.addHook('beforeCreate', function(user) {
         if (user.password) {
             const salt = bcrypt.genSaltSync(10, 'a');
