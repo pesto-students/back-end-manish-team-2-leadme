@@ -6,6 +6,7 @@ const { Sequelize } = require('sequelize');
 const db = require('./models/index').sequelize;
 
 // const Loan = require('./models/index').loan;
+// const repaymentSchedule = require('./models/index').repaymentSchedule;
 
 //setting up your port
 const PORT = process.env.PORT || 8080
@@ -19,9 +20,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // synchronizing the database and forcing it to false so we dont lose data
-db.sync({ alter: true }).then((a) => {
-    console.log("db has been re sync")
-})
+// db.sync({ force:true }).then((a) => {
+//     console.log("db has been re sync")
+// })
 
 app.use(passport.initialize());
 require("./middlewares/jwt")(passport);

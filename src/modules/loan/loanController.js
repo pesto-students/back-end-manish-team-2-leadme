@@ -28,17 +28,17 @@ exports.getLoan = (req, res) => {
             if (!loans instanceof Model){
                 return res.status(200).json(buildRes({message: 'No loans found'}));
             } 
-            return res.status(200).json(buildRes({success: true, loans: loans, where}));
+            return res.status(200).json(buildRes({success: true, loans: loans}));
         })
         .catch(err => {
             errLogger(err)
-            res.status(500).json(buildRes({message: err.message, where}))
+            res.status(500).json(buildRes({message: err.message}))
         });
 };
 
 /**
- * @route POST api/auth/login
- * @desc Login user and return JWT token
+ * @route POST api/loan
+ * @desc Create new loan
  */
 exports.postLoan = (req, res) => {
     const data = { amount, interestRate, payoutFrequency, emiStartDate, tenureMonths, expiryDate, maturityDate, purposeId, description } = req.body;
@@ -52,3 +52,24 @@ exports.postLoan = (req, res) => {
             res.status(500).json(buildRes({message: err.message}))
         });
 };
+
+/**
+ * @route POST api/auth/login
+ * @desc Login user and return JWT token
+ */
+ exports.loanDetails = (req, res) => {
+    Loan.findOne({ where: {id: req.params.loanId}, include:[
+        { association: 'rps'}, {association: 'lender'}, {association: 'borrower'}
+    ]})
+        .then(loansDetails => {
+            if (!loansDetails){
+                return res.status(200).json(buildRes({message: 'No loans found'}));
+            } 
+            return res.status(200).json(buildRes({success: true, loan: loansDetails}));
+        })
+        .catch(err => {
+            errLogger(err)
+            res.status(500).json(buildRes({message: err.message}))
+        });
+};
+
