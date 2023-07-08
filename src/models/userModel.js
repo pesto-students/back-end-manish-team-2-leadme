@@ -22,24 +22,6 @@ const User =  (sequelize) => {
             allowNull: false
         },
     }, {timestamps: true})
-    
-    // User.associate = function(models) {
-    //     User.hasMany(models.Loan, {
-    //         foreignKey: 'borrowerUserId',
-    //         as: 'borrower',
-    //     });
-
-    //     User.hasMany(models.Loan, {
-    //         foreignKey: 'lenderUserId',
-    //         as: 'lender',
-    //     });
-    // };
-
-    // User.hasMany(Loan);
-
-    // User.associate = function(models) {
-    //     User.hasMany(models.Loan, {as: 'employes'})
-    // };
 
     User.associate = models => {
         User.hasMany(models.loan , {foreignKey: 'borrowerUserId', as: 'borrower'});

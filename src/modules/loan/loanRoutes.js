@@ -6,6 +6,7 @@ const paramsValidator = require('../../middlewares/paramsValidator');
 const router = express.Router();
 
 router.get('/', paramsValidator, loanController.getLoan);
+
 router.post('/',  [
     check('amount').not().isEmpty().isNumeric().withMessage('Valid Amount required'),
     check('interestRate').not().isEmpty().isFloat({min: 0, max: 99.99}).withMessage('Valid interestRate required'),
@@ -16,5 +17,10 @@ router.post('/',  [
     check('purposeId').notEmpty().isNumeric().withMessage('valid purposeId required'),
     check('expiryDate').notEmpty().isDate({format: 'YYYY-MM-DD'}).withMessage('valid expiryDate required in Y-m-d format'),
 ], paramsValidator, loanController.postLoan);
+
+router.get('/:loanId', [
+    check('loanId').notEmpty().withMessage("Loan id is missing"),
+], paramsValidator, loanController.loanDetails)
+
 
 module.exports = router;

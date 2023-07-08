@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const { generateRPS } = require('../lib/rpsLib');
+const { errLogger } = require('../utils');
 const User = require('./index').user;
 const DataTypes = require('sequelize').DataTypes;
 
@@ -79,8 +79,20 @@ const Loan =  (sequelize) => {
     Loan.associate = function(models) {
         Loan.belongsTo(models.user, {foreignKey: 'borrowerUserId', as: 'borrower'})
         Loan.belongsTo(models.user, {foreignKey: 'lenderUserId', as: 'lender'})
-
+        Loan.hasMany(models.repaymentSchedule , {foreignKey: 'loanId', as: 'rps'});
     };
+
+    //generate RPS
+    Loan.addHook('afterCreate', function(loan) {
+        let rps = generateRPS(loan);
+        rps = rps.map(installment => ({ ...installment, loanId: loan.id, is_paid: false }));
+        rps.forEach(rpsInstallment => {
+            installment = new sequelize.models.repaymentSchedule(rpsInstallment);
+            installment.save().catch(err => {
+                errLogger(err)
+            });;
+        });
+    });
 
     return Loan;
 }
