@@ -8,3 +8,7 @@ exports.buildRes = function(data) {
 exports.errLogger = function (err){
     Sentry.captureException(err);
 }
+
+exports.round = (num, precision = 2) => {
+    return Number(parseFloat(num).toFixed(precision));
+}

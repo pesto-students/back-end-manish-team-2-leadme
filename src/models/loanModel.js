@@ -1,5 +1,6 @@
+const { REQUESTED, ACTIVE, COMPLETED, EXPIRED, DISABLED } = require('../config/constants').loanStatus;
 const { generateRPS } = require('../lib/rpsLib');
-const { errLogger } = require('../utils');
+const { errLogger, round } = require('../utils');
 const User = require('./index').user;
 const DataTypes = require('sequelize').DataTypes;
 
@@ -22,13 +23,18 @@ const Loan =  (sequelize) => {
             }
         },
         loanStatus: {
-            type: DataTypes.ENUM('Requested', 'Expired', 'Active', 'Completed'),
-            defaultValue: 'Requested',
+            type: DataTypes.ENUM(REQUESTED, ACTIVE, COMPLETED, EXPIRED, DISABLED),
+            defaultValue: REQUESTED,
             allowNull: false,
         },
         amount: {
-            type: DataTypes.INTEGER.UNSIGNED,
+            type: DataTypes.FLOAT.UNSIGNED,
             allowNull: false,
+        },
+        interest: {
+            type: DataTypes.FLOAT.UNSIGNED,
+            default: null,
+            allowNull: true,
         },
         interestRate: {
             type: DataTypes.FLOAT(4, 2).UNSIGNED,
@@ -47,15 +53,15 @@ const Loan =  (sequelize) => {
             allowNull: false,
         },
         expiryDate: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: false,
         },
         maturityDate: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: false,
         },
-        purposeId: {
-            type: DataTypes.INTEGER.UNSIGNED,
+        purpose: {
+            type: DataTypes.STRING,
         },
         description: {
             type: DataTypes.TEXT,
@@ -73,6 +79,12 @@ const Loan =  (sequelize) => {
             {
                 fields: ['borrowerUserId'],
             },
+            {
+                fields: ['lenderUserId'],
+            },
+            {
+                fields: ['loanStatus'],
+            },
         ],
     })
     
@@ -82,16 +94,45 @@ const Loan =  (sequelize) => {
         Loan.hasMany(models.repaymentSchedule , {foreignKey: 'loanId', as: 'rps'});
     };
 
+    Loan.addHook('beforeCreate', async function(loan) {
+        let roundColumns = ['amount', 'interest', 'interestRate'];
+        Object.keys(loan).forEach(key => {
+            if(roundColumns.includes(key) && loan[key]) loan[key] = round(loan[key], 2);
+        });
+        loan.emiStartDate = new Date(loan.emiStartDate).toISOString().split('T')[0];
+        loan.maturityDate = new Date(loan.maturityDate).toISOString().split('T')[0];
+        loan.expiryDate = new Date(loan.expiryDate).toISOString().split('T')[0];      
+        if (loan.purpose) loan.purpose = loan.purpose.toLowerCase().split(" ").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+    });
+
+    Loan.addHook('beforeUpdate', async function(loan) {
+        let roundColumns = ['amount', 'interest', 'interestRate'];
+        Object.keys(loan).forEach(key => {
+            if(roundColumns.includes(key) && loan[key]) loan[key] = round(loan[key], 2);
+        });
+        loan.emiStartDate = new Date(loan.emiStartDate).toISOString().split('T')[0];
+        loan.maturityDate = new Date(loan.maturityDate).toISOString().split('T')[0];
+        loan.expiryDate = new Date(loan.expiryDate).toISOString().split('T')[0];      
+        if (loan.purpose) loan.purpose = loan.purpose.toLowerCase().split(" ").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+    });
+
     //generate RPS
-    Loan.addHook('afterCreate', function(loan) {
+    Loan.addHook('afterCreate', async function(loan) {
         let rps = generateRPS(loan);
         rps = rps.map(installment => ({ ...installment, loanId: loan.id, is_paid: false }));
-        rps.forEach(rpsInstallment => {
+        rps.forEach(async rpsInstallment => {
             installment = new sequelize.models.repaymentSchedule(rpsInstallment);
-            installment.save().catch(err => {
+            await installment.save().catch(err => {
                 errLogger(err)
             });;
         });
+
+        //update interest amount
+        let interest = rps.reduce(function(a, b){
+            return a + round(b.interest, 2);
+        }, 0);
+        await loan.update({interest: round(interest, 2)});
+
     });
 
     return Loan;

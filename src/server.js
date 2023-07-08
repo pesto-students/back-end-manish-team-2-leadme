@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // synchronizing the database and forcing it to false so we dont lose data
-// db.sync({ force:true }).then((a) => {
+// db.sync({ alter:true }).then((a) => {
 //     console.log("db has been re sync")
 // })
 

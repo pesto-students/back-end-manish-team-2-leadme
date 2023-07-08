@@ -76,6 +76,5 @@ const PMT = (rate, nper, pv, fv, type) => {
 }
 
 const round = (num, precision = 2) => {
-    return Number(parseFloat(num).toFixed(precision
-        ))
+    return Number(parseFloat(num).toFixed(precision))
 }
