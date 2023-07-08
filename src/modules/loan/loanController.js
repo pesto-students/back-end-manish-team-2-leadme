@@ -41,7 +41,7 @@ exports.getLoan = (req, res) => {
  * @desc Create new loan
  */
 exports.postLoan = (req, res) => {
-    const data = { amount, interestRate, payoutFrequency, emiStartDate, tenureMonths, expiryDate, maturityDate, purposeId, description } = req.body;
+    const data = { amount, interestRate, payoutFrequency, emiStartDate, tenureMonths, expiryDate, maturityDate, purpose, description } = req.body;
     data.borrowerUserId = req.user.id
     const newLoan = new Loan(data);
 

@@ -14,7 +14,7 @@ router.post('/',  [
     check('emiStartDate').notEmpty().isDate({format: 'YYYY-MM-DD'}).withMessage('valid emiStartDate required in Y-m-d format'),
     check('tenureMonths').notEmpty().isNumeric({min: 1}).withMessage('valid tenureMonths required'),
     check('maturityDate').notEmpty().isDate({format: 'YYYY-MM-DD'}).withMessage('valid maturityDate required in Y-m-d format'),
-    check('purposeId').notEmpty().isNumeric().withMessage('valid purposeId required'),
+    check('purpose').notEmpty().isString().withMessage('valid purposeId required'),
     check('expiryDate').notEmpty().isDate({format: 'YYYY-MM-DD'}).withMessage('valid expiryDate required in Y-m-d format'),
 ], paramsValidator, loanController.postLoan);
 
