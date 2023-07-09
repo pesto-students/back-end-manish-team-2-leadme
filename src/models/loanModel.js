@@ -1,8 +1,8 @@
 const { REQUESTED, ACTIVE, COMPLETED, EXPIRED, DISABLED } = require('../config/constants').loanStatus;
 const { generateRPS } = require('../lib/rpsLib');
 const { errLogger, round } = require('../utils');
-const User = require('./index').user;
 const DataTypes = require('sequelize').DataTypes;
+const roundColumns = ['amount', 'interest', 'interestRate'];
 
 const Loan =  (sequelize) => {
     const Loan = sequelize.define( "loan", {
@@ -10,7 +10,7 @@ const Loan =  (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: User, // 'Movies' would also work
+                model: sequelize.models.user,
                 key: 'id'
             }
         },
@@ -18,7 +18,7 @@ const Loan =  (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: true,
             references: {
-                model: User, // 'Movies' would also work
+                model: sequelize.models.user, // 'Movies' would also work
                 key: 'id'
             }
         },
@@ -69,7 +69,7 @@ const Loan =  (sequelize) => {
             default: null,
         },
         agreementUrl: {
-            type: DataTypes.STRING(1024),
+            type: DataTypes.STRING,
             allowNull: true,
             default: null,
         }
@@ -95,7 +95,6 @@ const Loan =  (sequelize) => {
     };
 
     Loan.addHook('beforeCreate', async function(loan) {
-        let roundColumns = ['amount', 'interest', 'interestRate'];
         Object.keys(loan).forEach(key => {
             if(roundColumns.includes(key) && loan[key]) loan[key] = round(loan[key], 2);
         });
@@ -106,7 +105,6 @@ const Loan =  (sequelize) => {
     });
 
     Loan.addHook('beforeUpdate', async function(loan) {
-        let roundColumns = ['amount', 'interest', 'interestRate'];
         Object.keys(loan).forEach(key => {
             if(roundColumns.includes(key) && loan[key]) loan[key] = round(loan[key], 2);
         });

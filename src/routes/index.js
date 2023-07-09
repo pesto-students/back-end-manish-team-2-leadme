@@ -4,6 +4,7 @@ const auth = require('../modules/auth/authRoutes');
 const loan = require('../modules/loan/loanRoutes')
 const protected = require('./protected');
 const authenticate = require('../middlewares/authenticate');
+const wallet = require('../modules/wallet/walletRoutes');
 const { buildRes } = require('../utils');
 
 module.exports = app => {
@@ -13,4 +14,5 @@ module.exports = app => {
     app.use('/api/auth', auth);
     app.use('/api/protected', authenticate, protected);
     app.use('/api/loan', authenticate, loan)
+    app.use('/api/user/wallet', authenticate, wallet);
 };

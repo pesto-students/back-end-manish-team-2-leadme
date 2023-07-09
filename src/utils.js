@@ -6,6 +6,7 @@ exports.buildRes = function(data) {
 }
 
 exports.errLogger = function (err){
+    console.error(err);
     Sentry.captureException(err);
 }
 

@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const DataTypes = require('sequelize').DataTypes;
-const Loan = require('./index').loan;
 
 const User =  (sequelize) => {
     const User = sequelize.define( "user", {
@@ -26,7 +25,7 @@ const User =  (sequelize) => {
     User.associate = models => {
         User.hasMany(models.loan , {foreignKey: 'borrowerUserId', as: 'borrower'});
         User.hasMany(models.loan , {foreignKey: 'lenderUserId', as: 'lender'});
-
+        User.hasOne(models.wallet, {foreignKey: 'userId', as: 'wallet'});
     }
     User.addHook('beforeCreate', function(user) {
         if (user.password) {
@@ -41,7 +40,12 @@ const User =  (sequelize) => {
             user.password = bcrypt.hashSync(user.password, salt);
         }
     });
-
+    
+    //create wallet
+    User.addHook('afterCreate', async function(user) {
+        new sequelize.models.wallet({balance:0, userId: user.id}).save();
+    });
+    
     User.prototype.comparePassword = function(pass) {
         return bcrypt.compareSync(pass, this.password);
     }
