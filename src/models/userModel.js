@@ -21,6 +21,15 @@ const User =  (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false
         },
+        panNumber: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        adharNumber: {
+            type: DataTypes.STRING,
+            allowNull: false
+        }
+
     }, {timestamps: true})
 
     User.associate = models => {

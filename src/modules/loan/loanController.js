@@ -62,10 +62,10 @@ exports.postLoan = (req, res) => {
         { association: 'rps'}, {association: 'lender'}, {association: 'borrower'}
     ]})
         .then(loansDetails => {
-            if (!loansDetails){
+         if (!loansDetails){
                 return res.status(200).json(buildRes({message: 'No loans found'}));
             } 
-            return res.status(200).json(buildRes({success: true, loan: loansDetails}));
+            return res.status(200).json(buildRes({success: true, loan: loansDetails}));   
         })
         .catch(err => {
             errLogger(err)
