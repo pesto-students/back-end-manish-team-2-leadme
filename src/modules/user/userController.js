@@ -1,5 +1,6 @@
 const User = require('../../models/index').user;
-
+const { decryptData } = require('../../lib/encryptionLib');
+const { buildRes, errLogger } = require('../../utils');
 
 /**
  * @route GET api/user
@@ -8,20 +9,53 @@ const User = require('../../models/index').user;
 exports.getUser = (req, res) => { 
 
     User.findOne({ where: {id: req.params.userId}})
-        .then(userDetails => {
+        .then(async userDetails => {
             if (!userDetails){
                 return res.status(200).json(buildRes({message: 'No user found'}));
             } 
+
+            if(userDetails.pan){
+                userDetails.pan = await decryptData(userDetails.pan);
+            }
+            // if(userDetails.aadhar){
+            //     userDetails.pan = await decryptData(userDetails.pan);
+            // }
+
             return res.status(200).json(buildRes({success: true, user: userDetails}));
         })
         .catch(error => {
-            errLogger(err)
-            res.status(500).json(buildRes({message: err.message}))
+            errLogger(error)
+            res.status(500).json(buildRes({message: error.message}))
+        })
+}
+
+exports.updateUserData = (req, res) => { 
+
+    User.findOne({ where: {id: req.params.userId}})
+        .then(async userDetails => {
+            if (!userDetails){
+                return res.status(200).json(buildRes({message: 'No user found'}));
+            } 
+
+            const { firstName, lastName, email, mobile } = req.body;
+
+            userDetails.lastName= lastName;   
+            userDetails.firstName= firstName;
+            userDetails.email= email;
+            userDetails.mobile= mobile;
+
+            await userDetails.save();
+
+            return res.status(200).json(buildRes({success: true, user: userDetails}));
+        })
+        .catch(error => {
+            errLogger(error)
+            res.status(500).json(buildRes({message: error.message}))
         })
 }
 
 exports.getAllUsers = (req, res) => {
-    User.find({})
+    User.findAll({})
         .then(userDetails => {
             if (!userDetails){
                 return res.status(200).json(buildRes({message: 'No user found'}));
@@ -29,7 +63,7 @@ exports.getAllUsers = (req, res) => {
             return res.status(200).json(buildRes({success: true, user: userDetails}));
         })
         .catch(error => {
-            errLogger(err)
-            res.status(500).json(buildRes({message: err.message}))
+            errLogger(error)
+            res.status(500).json(buildRes({message: error.message}))
         })
     }

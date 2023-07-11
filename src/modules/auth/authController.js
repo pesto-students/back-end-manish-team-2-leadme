@@ -20,7 +20,7 @@ exports.register = (req, res) => {
                 return res.status(400).json(buildRes({message: 'The email address you have entered is already used.'}));
             } 
             // Create and save the user
-            const data = { firstName, lastName, email, password } = req.body;
+            const data = { firstName, lastName, email, password, mobile } = req.body;
             const newUser = new User(data);
             newUser.save()
                 .then(user => res.status(200).json(buildRes({success: true, token: user.generateJWT()})))

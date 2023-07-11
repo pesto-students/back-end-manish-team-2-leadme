@@ -5,11 +5,12 @@ const paramsValidator = require('../../middlewares/paramsValidator');
 
 const router = express.Router();
 
-router.get('/', paramsValidator, loanController.getLoan);
-
 router.get('/:userId', [
-    check('userId').notEmpty().withMessage("Loan id is missing"),
+    check('userId').notEmpty().withMessage("User id is missing"),
 ], paramsValidator, userController.getUser)
 
+router.put('/:userId', [
+    check('userId').notEmpty().withMessage("User id is missing"),
+], paramsValidator, userController.updateUserData)
 
-module.exports = router;
+module.exports = router;    
