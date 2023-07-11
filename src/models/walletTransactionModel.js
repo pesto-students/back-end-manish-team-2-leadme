@@ -1,6 +1,6 @@
 const { round } = require('../utils');
 const DataTypes = require('sequelize').DataTypes;
-const { DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW } = require('../config/constants').walletTransactionTypes;
+const { DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW, INCOME } = require('../config/constants').walletTransactionTypes;
 const roundColumns = ['amount', 'postTransactionBalance'];
 
 const walletTransaction =  (sequelize) => {
@@ -14,7 +14,7 @@ const walletTransaction =  (sequelize) => {
             }
         },
         type: {
-            type: DataTypes.ENUM(DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW),
+            type: DataTypes.ENUM(DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW, INCOME),
             allowNull: false,
         },
         amount: {

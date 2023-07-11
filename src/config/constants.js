@@ -12,6 +12,7 @@ exports.walletTransactionTypes = {
     REPAYMENT: 'REPAYMENT',
     INVEST: 'INVEST',
     BORROW: 'BORROW',
+    INCOME: 'INCOME',
 }
 
 exports.gatewayTransaction = {

@@ -5,7 +5,9 @@ const Wallet = db.sequelize.models.wallet;
 const Loan = db.sequelize.models.loan;
 const gatewayTransaction = db.sequelize.models.gatewayTransaction;
 const walletTransaction = db.sequelize.models.walletTransaction;
-const { DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW } = require('../../config/constants').walletTransactionTypes;
+const repaymentSchedule = db.sequelize.models.repaymentSchedule;
+
+const { DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW, INCOME } = require('../../config/constants').walletTransactionTypes;
 const { REQUESTED, ACTIVE, COMPLETED, EXPIRED, DISABLED } = require('../../config/constants').loanStatus;
 
 const { Model, Op } = require('sequelize');
@@ -144,6 +146,90 @@ exports.postLoan = (req, res) => {
 
         t.commit();
         return res.status(200).json(buildRes({success: true, message: 'Hurray! Investment is done'}));
+    } catch (err) {
+        await t.rollback();
+        errLogger(err);
+        return res.status(500).json(buildRes({message: err.message}));
+    }
+};
+
+/**
+ * @route POST api/loan/:loanId/repayment/:installmentNo
+ * @desc invest in a loan
+ */
+ exports.repayment = async (req, res) => {
+    const {loanId, installmentNo} = req.params;
+    const loan = await Loan.findOne({ where: {id: loanId}, include: [{ association: 'rps'}]});
+
+    console.log(loan);
+    if(!loan.id){
+        return res.status(200).json(buildRes({message: 'No loan found'}));
+    }
+
+    if(loan.loanStatus != ACTIVE){
+        return res.status(200).json(buildRes({message: "Loan is not in Active state"}));
+    }
+
+    if(loan.borrowerUserId == req.user.id){
+        return res.status(200).json(buildRes({message: "You cant repay someone else loan"}));
+    }
+
+    const installment = loan.rps.find(r => r.installment = installmentNo);
+    if(installment.isPaid){
+        return res.status(200).json(buildRes({message: "Installment already paid"}));
+    }
+
+    const installmentAmount = round(installment.amount, 2);
+    const lenderWallet = await Wallet.findOne({where: {userId: loan.lenderUserId}});
+    const borrowerWallet = await Wallet.findOne({where: {userId: loan.borrowerUserId}});
+
+    if(round(borrowerWallet.amount - installmentAmount, 2) < 0){
+        return res.status(200).json(buildRes({message: 'Insufficent balance, please add money to repay'}));
+    }
+
+    const t = await db.sequelize.transaction();
+    
+    try {
+        //make repayment
+        const lenderPostTxnBalance = round(lenderWallet.amount + installmentAmount, 2);
+        let lenderTxnData = {
+            type: INCOME,
+            amount: installmentAmount,
+            walletId: lenderWallet.id,
+            postTransactionBalance: lenderPostTxnBalance,
+            referanceId: installment.id,
+        };
+        let investTxn = new walletTransaction(lenderTxnData);
+        await investTxn.save();
+
+        //substract lender wallet
+        await lenderWallet.update({amount: lenderPostTxnBalance});
+
+        //make borrow money txn
+        const borrowerPostTxnBalance = round(borrowerWallet.amount - installmentAmount, 2);
+        let borrowerTxnData = {
+            type: REPAYMENT,
+            amount: installmentAmount,
+            walletId: borrowerWallet.id,
+            postTransactionBalance: borrowerPostTxnBalance,
+            referanceId: installment.id,
+        };
+        let borrowTxn = new walletTransaction(borrowerTxnData);
+        await borrowTxn.save();
+        
+        //add borrowr wallet
+        await borrowerWallet.update({amount: borrowerPostTxnBalance});
+
+        //update installment
+        let paymentDate = new Date().toISOString().split('T')[0];
+        await installment.update({isPaid: true, paymentDate: paymentDate});
+
+        //update loan
+        const paidAmount = round(installmentAmount + loan.paidAmount, 2);
+        await loan.update({paidAmount: paidAmount});
+
+        t.commit();
+        return res.status(200).json(buildRes({success: true, message: 'Repayment done successfully'}));
     } catch (err) {
         await t.rollback();
         errLogger(err);
