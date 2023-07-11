@@ -74,17 +74,3 @@ exports.updatePassword = (req, res) => {
             res.status(500).json(buildRes({message: error.message}))
         })
 }
-
-exports.getAllUsers = (req, res) => {
-    User.findAll({})
-        .then(userDetails => {
-            if (!userDetails){
-                return res.status(200).json(buildRes({message: 'No user found'}));
-            } 
-            return res.status(200).json(buildRes({success: true, user: userDetails}));
-        })
-        .catch(error => {
-            errLogger(error)
-            res.status(500).json(buildRes({message: error.message}))
-        })
-    }
