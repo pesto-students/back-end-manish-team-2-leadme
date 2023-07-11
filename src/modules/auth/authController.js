@@ -1,5 +1,5 @@
 // const User = require('../../models/index2').users;
-const User = require('../../models/index').user;
+const User = require('../../models/index').sequelize.models.user;
 
 
 // const User = db.users;

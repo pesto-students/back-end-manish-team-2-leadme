@@ -1,4 +1,3 @@
-const Loan = require('./index').loan;
 const DataTypes = require('sequelize').DataTypes;
 
 const repaymentSchedule =  (sequelize) => {
@@ -7,7 +6,7 @@ const repaymentSchedule =  (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: Loan, 
+                model: sequelize.models.loan, 
                 key: 'id'
             }
         },
