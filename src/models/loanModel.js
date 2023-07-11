@@ -1,6 +1,7 @@
 const { REQUESTED, ACTIVE, COMPLETED, EXPIRED, DISABLED } = require('../config/constants').loanStatus;
 const { generateRPS } = require('../lib/rpsLib');
 const { errLogger, round } = require('../utils');
+const User = require('./index').user;
 const DataTypes = require('sequelize').DataTypes;
 const roundColumns = ['amount', 'interest', 'interestRate'];
 
@@ -40,6 +41,11 @@ const Loan =  (sequelize) => {
             type: DataTypes.FLOAT,
             defaultValue: 0,
             allowNull: false,
+        },
+        interest: {
+            type: DataTypes.FLOAT.UNSIGNED,
+            default: null,
+            allowNull: true,
         },
         interestRate: {
             type: DataTypes.FLOAT(4, 2).UNSIGNED,

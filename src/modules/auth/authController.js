@@ -20,7 +20,7 @@ exports.register = (req, res) => {
                 return res.status(400).json(buildRes({message: 'The email address you have entered is already used.'}));
             } 
             // Create and save the user
-            const data = { firstName, lastName, email, password } = req.body;
+            const data = { firstName, lastName, email, password, mobile } = req.body;
             const newUser = new User(data);
             newUser.save()
                 .then(user => res.status(200).json(buildRes({success: true, token: user.generateJWT()})))
@@ -49,7 +49,7 @@ exports.login = (req, res) => {
             if (!user.comparePassword(req.body.password)) return res.status(401).json(buildRes({message: 'Invalid email or password'}));
 
             // Login successful, write token
-            res.status(200).json(buildRes({success: true, token: user.generateJWT()}));
+            res.status(200).json(buildRes({success: true, token: user.generateJWT(), user: user}));
         })
         .catch(err => {
             errLogger(err)

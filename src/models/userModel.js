@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { encryptData } = require('../lib/encryptionLib');
 const DataTypes = require('sequelize').DataTypes;
 
 const User =  (sequelize) => {
@@ -20,6 +21,19 @@ const User =  (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false
         },
+        pan: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        aadhar: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        mobile: {
+            type: DataTypes.BIGINT,
+            allowNull: true
+        },
+
     }, {timestamps: true})
 
     User.associate = models => {
@@ -27,10 +41,16 @@ const User =  (sequelize) => {
         User.hasMany(models.loan , {foreignKey: 'lenderUserId', as: 'lender'});
         User.hasOne(models.wallet, {foreignKey: 'userId', as: 'wallet'});
     }
-    User.addHook('beforeCreate', function(user) {
+    User.addHook('beforeCreate', async function(user) {
         if (user.password) {
             const salt = bcrypt.genSaltSync(10, 'a');
             user.password = bcrypt.hashSync(user.password, salt);
+        }
+        if (user.aadhar) {
+            user.aadhar = await encryptData(user.aadhar);
+        }
+        if (user.pan) {
+            user.pan = await encryptData(user.pan);
         }
     });
 
