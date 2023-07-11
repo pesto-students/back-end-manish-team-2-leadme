@@ -1,14 +1,15 @@
 const User = require('../../models/index').user;
 const { decryptData, encryptData } = require('../../lib/encryptionLib');
 const { buildRes, errLogger } = require('../../utils');
+const bcrypt = require('bcrypt');
+
 
 /**
  * @route GET api/user
  * @desc Register user
  */
 exports.getUser = (req, res) => { 
-
-    User.findOne({ where: {id: req.params.userId}})
+    User.findOne({ where: {id: req.user.id}})
         .then(async userDetails => {
             if (!userDetails){
                 return res.status(200).json(buildRes({message: 'No user found'}));
@@ -29,9 +30,8 @@ exports.getUser = (req, res) => {
         })
 }
 
-exports.updateUserData = (req, res) => { 
-
-    User.findOne({ where: {id: req.params.userId}})
+exports.updateUserData = (req, res) => {     
+    User.findOne({ where: {id: req.user.id}})
         .then(async userDetails => {
             if (!userDetails){
                 return res.status(200).json(buildRes({message: 'No user found'}));
@@ -55,15 +55,13 @@ exports.updateUserData = (req, res) => {
 }
 
 exports.updatePassword = (req, res) => {
-    User.findOne({ where: {id: req.params.userId}})
+    User.findOne({ where: {id: req.user.id}})
         .then(async userDetails => {
             if (!userDetails){
                 return res.status(200).json(buildRes({message: 'No user found'}));
             } 
 
             const { password } = req.body;
-
-            password = await encryptData(password);
 
             userDetails.password= password;   
 

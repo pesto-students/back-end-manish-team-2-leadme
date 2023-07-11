@@ -49,7 +49,7 @@ exports.login = (req, res) => {
             if (!user.comparePassword(req.body.password)) return res.status(401).json(buildRes({message: 'Invalid email or password'}));
 
             // Login successful, write token
-            res.status(200).json(buildRes({success: true, token: user.generateJWT()}));
+            res.status(200).json(buildRes({success: true, token: user.generateJWT(), user: user}));
         })
         .catch(err => {
             errLogger(err)
