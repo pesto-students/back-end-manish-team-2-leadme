@@ -1,6 +1,6 @@
 const { round } = require('../utils');
 const DataTypes = require('sequelize').DataTypes;
-const { DEPOSIT, WITHDRAWAL, REPAYMENT } = require('../config/constants').walletTransactionTypes;
+const { DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW } = require('../config/constants').walletTransactionTypes;
 const roundColumns = ['amount', 'postTransactionBalance'];
 
 const walletTransaction =  (sequelize) => {
@@ -14,7 +14,7 @@ const walletTransaction =  (sequelize) => {
             }
         },
         type: {
-            type: DataTypes.ENUM(DEPOSIT, WITHDRAWAL, REPAYMENT),
+            type: DataTypes.ENUM(DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW),
             allowNull: false,
         },
         amount: {
@@ -29,7 +29,7 @@ const walletTransaction =  (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: true,
             defaultValue: null,
-            comment: 'RPS id in case of loan repayment'
+            comment: 'RPS id in case of loan repayment, loan id in case of invest'
         },
         remark: {
             type: DataTypes.STRING,

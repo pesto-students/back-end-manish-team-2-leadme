@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { round, methodReturn, errLogger } = require('../utils');
-const { DEPOSIT, WITHDRAWAL, REPAYMENT } = require('../config/constants').walletTransactionTypes;
+const { DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW } = require('../config/constants').walletTransactionTypes;
 const {CREATED, FAILED, SUCCESS} = require('../config/constants').gatewayTransaction.status;
 const DataTypes = require('sequelize').DataTypes;
 const roundColumns = ['amount'];
@@ -51,7 +51,7 @@ const Wallet =  (sequelize) => {
     });
     
     //make a deposit 
-    Wallet.prototype.addMoney = async function(gatewayTransactionId, gatewayResponse = null) {
+    Wallet.prototype.depositMoney = async function(gatewayTransactionId, gatewayResponse = null) {
 
         let t = await sequelize.transaction();
         try {

@@ -36,6 +36,11 @@ const Loan =  (sequelize) => {
             default: null,
             allowNull: true,
         },
+        paidAmount: {
+            type: DataTypes.FLOAT,
+            defaultValue: 0,
+            allowNull: false,
+        },
         interestRate: {
             type: DataTypes.FLOAT(4, 2).UNSIGNED,
             allowNull: false,

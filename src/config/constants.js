@@ -10,6 +10,8 @@ exports.walletTransactionTypes = {
     DEPOSIT: 'DEPOSIT',
     WITHDRAWAL: 'WITHDRAWAL',
     REPAYMENT: 'REPAYMENT',
+    INVEST: 'INVEST',
+    BORROW: 'BORROW',
 }
 
 exports.gatewayTransaction = {

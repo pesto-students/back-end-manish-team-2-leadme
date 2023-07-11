@@ -22,5 +22,9 @@ router.get('/:loanId', [
     check('loanId').notEmpty().withMessage("Loan id is missing"),
 ], paramsValidator, loanController.loanDetails)
 
+router.post('/:loanId/invest', [
+    check('loanId').notEmpty().withMessage("Loan id is missing"),
+], paramsValidator, loanController.invest)
+
 
 module.exports = router;

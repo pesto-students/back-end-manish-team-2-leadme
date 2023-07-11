@@ -1,8 +1,8 @@
 require('dotenv').config();
 const db = require('../../models/index');
-const User = db.user;
-const Wallet = db.wallet;
-const gatewayTransaction = db.gatewayTransaction;
+const User = db.sequelize.models.user;
+const Wallet = db.sequelize.models.wallet;
+const gatewayTransaction = db.sequelize.models.gatewayTransaction;
 const razorpay = require('../../config/razorpay');
 const { buildRes, errLogger, round } = require('../../utils');
 const {CREATED, FAILED, SUCCESS} = require('../../config/constants').gatewayTransaction.status;
@@ -123,7 +123,7 @@ exports.getWallet = (req, res) => {
         // const t = await db.sequelize.transaction();
         try {
                 const wallet = await Wallet.findOne({where: {id: gatewayTxn.walletId}});
-                let addMoneyRes = await wallet.addMoney(gatewayTxn.id, order);
+                let addMoneyRes = await wallet.depositMoney(gatewayTxn.id, order);
                 // await t.commit();
                 return res.status(200).json(buildRes({success: addMoneyRes.status, message: addMoneyRes.message}));
         } catch (err) {
