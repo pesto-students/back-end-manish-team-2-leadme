@@ -13,4 +13,8 @@ router.put('/:userId', [
     check('userId').notEmpty().withMessage("User id is missing"),
 ], paramsValidator, userController.updateUserData)
 
+router.put('/changePass/:userId', [
+    check('userId').notEmpty().withMessage("User id is missing"),
+], paramsValidator, userController.updatePassword)
+
 module.exports = router;    

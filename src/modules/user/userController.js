@@ -1,5 +1,5 @@
 const User = require('../../models/index').user;
-const { decryptData } = require('../../lib/encryptionLib');
+const { decryptData, encryptData } = require('../../lib/encryptionLib');
 const { buildRes, errLogger } = require('../../utils');
 
 /**
@@ -17,9 +17,9 @@ exports.getUser = (req, res) => {
             if(userDetails.pan){
                 userDetails.pan = await decryptData(userDetails.pan);
             }
-            // if(userDetails.aadhar){
-            //     userDetails.pan = await decryptData(userDetails.pan);
-            // }
+            if(userDetails.aadhar){
+                userDetails.aadhar = await decryptData(userDetails.aadhar);
+            }
 
             return res.status(200).json(buildRes({success: true, user: userDetails}));
         })
@@ -43,6 +43,29 @@ exports.updateUserData = (req, res) => {
             userDetails.firstName= firstName;
             userDetails.email= email;
             userDetails.mobile= mobile;
+
+            await userDetails.save();
+
+            return res.status(200).json(buildRes({success: true, user: userDetails}));
+        })
+        .catch(error => {
+            errLogger(error)
+            res.status(500).json(buildRes({message: error.message}))
+        })
+}
+
+exports.updatePassword = (req, res) => {
+    User.findOne({ where: {id: req.params.userId}})
+        .then(async userDetails => {
+            if (!userDetails){
+                return res.status(200).json(buildRes({message: 'No user found'}));
+            } 
+
+            const { password } = req.body;
+
+            password = await encryptData(password);
+
+            userDetails.password= password;   
 
             await userDetails.save();
 
