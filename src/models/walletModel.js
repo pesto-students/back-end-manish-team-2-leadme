@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { round } = require('../utils');
+const { round, methodReturn, errLogger } = require('../utils');
+const { DEPOSIT, WITHDRAWAL, REPAYMENT } = require('../config/constants').walletTransactionTypes;
+const {CREATED, FAILED, SUCCESS} = require('../config/constants').gatewayTransaction.status;
 const DataTypes = require('sequelize').DataTypes;
 const roundColumns = ['amount'];
 
@@ -48,6 +50,49 @@ const Wallet =  (sequelize) => {
         });
     });
     
+    //make a deposit 
+    Wallet.prototype.addMoney = async function(gatewayTransactionId, gatewayResponse = null) {
+
+        let t = await sequelize.transaction();
+        try {
+            let gatewayTxn = await sequelize.models.gatewayTransaction.findOne({where:{id: gatewayTransactionId}});
+            if(!gatewayTxn.id){
+                return methodReturn(false, 'Gateway transaction not found');
+            }
+
+            //save txn log
+            const amount = round(gatewayTxn.amount/100, 2)
+            const postTxnBalance = round(this.amount + amount, 2);
+            let txnData = {
+                type: DEPOSIT,
+                amount: amount,
+                walletId: this.id,
+                postTransactionBalance: postTxnBalance,
+                referanceId: gatewayTransactionId,
+            };
+            let walletTxn = new sequelize.models.walletTransaction(txnData);
+            await walletTxn.save();
+
+            //update wallet
+            await this.update({amount: postTxnBalance});
+
+            //update gatewat txn
+            const verifyAttemptCount = gatewayTxn.verifyAttemptCount + 1;
+            gatewayTxn.update({status: SUCCESS, responseJson: gatewayResponse, verifyAttemptCount: verifyAttemptCount});
+
+            await t.commit();
+            return methodReturn(true, 'Deposit Has been successful');
+
+        } catch (err) {
+            await t.rollback();
+            errLogger(err);
+            return methodReturn(false, err.message);
+        }
+
+        await t.rollback();
+        return methodReturn(false, 'Unknown error occured');
+    }
+
     return Wallet;
 }
 module.exports = Wallet;

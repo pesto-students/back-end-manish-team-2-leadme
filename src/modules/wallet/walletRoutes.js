@@ -7,4 +7,13 @@ const router = express.Router();
 
 router.get('/', paramsValidator, walletController.getWallet);
 
+router.post('/deposit',  [
+    check('amount').not().isEmpty().isNumeric().withMessage('Valid Amount required'),
+], paramsValidator, walletController.postDeposit);
+
+router.get('/deposit/status/:orderId', [
+    check('orderId').notEmpty().withMessage("order id is missing"),
+], paramsValidator, walletController.getDepositStatus)
+
+
 module.exports = router;

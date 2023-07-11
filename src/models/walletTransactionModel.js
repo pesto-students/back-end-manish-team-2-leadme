@@ -1,5 +1,4 @@
 const { round } = require('../utils');
-const Wallet = require('./index').wallet;
 const DataTypes = require('sequelize').DataTypes;
 const { DEPOSIT, WITHDRAWAL, REPAYMENT } = require('../config/constants').walletTransactionTypes;
 const roundColumns = ['amount', 'postTransactionBalance'];
@@ -10,7 +9,7 @@ const walletTransaction =  (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: Wallet, 
+                model: sequelize.models.wallet,
                 key: 'id'
             }
         },
