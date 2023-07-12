@@ -14,7 +14,7 @@ exports.register = (req, res) => {
         return res.status(400).json(buildRes({message: 'Email address cannot be empty'}));
     }
 
-    User.findOne({where: {email: req.body.email}})
+    User.scope('all').findOne({where: {email: req.body.email}})
         .then(user => {
             if (user){
                 return res.status(400).json(buildRes({message: 'The email address you have entered is already used.'}));
@@ -41,7 +41,7 @@ exports.register = (req, res) => {
  * @desc Login user and return JWT token
  */
 exports.login = (req, res) => {
-    User.findOne({where: {email: req.body.email}})
+    User.scope('all').findOne({where: {email: req.body.email}})
         .then(user => {
             if (!user) return res.status(401).json(buildRes({msg: 'The email address ' + req.body.email + ' is not associated with any account. Double-check your email address and try again.'}));
 
@@ -49,7 +49,10 @@ exports.login = (req, res) => {
             if (!user.comparePassword(req.body.password)) return res.status(401).json(buildRes({message: 'Invalid email or password'}));
 
             // Login successful, write token
-            res.status(200).json(buildRes({success: true, token: user.generateJWT(), user: user}));
+            const token = user.generateJWT()
+            user = user.dataValues;
+            delete user['password']
+            res.status(200).json(buildRes({success: true, token, user: user}));
         })
         .catch(err => {
             errLogger(err)

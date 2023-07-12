@@ -51,7 +51,12 @@ const gatewayTransaction =  (sequelize) => {
             {fields: ['orderId']},
             {fields: ['status']},
             {fields: ['walletId']}
-        ]
+        ],
+        defaultScope: {
+            attributes: {
+                exclude: ['createdAt', 'updatedAt']
+            },
+        },
     })
 
     gatewayTransaction.associate = models => {

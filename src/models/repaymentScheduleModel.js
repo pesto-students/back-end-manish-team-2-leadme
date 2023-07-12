@@ -52,6 +52,11 @@ const repaymentSchedule =  (sequelize) => {
                 fields: ['dueDate'],
             },
         ],
+        defaultScope: {
+            attributes: {
+                exclude: ['createdAt', 'updatedAt']
+            },
+        },
     })
     
     repaymentSchedule.associate = function(models) {

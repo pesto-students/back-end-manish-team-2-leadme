@@ -30,7 +30,12 @@ const Wallet =  (sequelize) => {
         timestamps: true,
         indexes: [
             {fields: ['userId']}
-        ]
+        ],
+        defaultScope: {
+            attributes: {
+                exclude: ['createdAt', 'updatedAt']
+            },
+        },
     })
 
     Wallet.associate = models => {
