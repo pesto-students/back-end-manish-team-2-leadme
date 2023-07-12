@@ -65,6 +65,7 @@ exports.updatePassword = (req, res) => {
 
             if (!userDetails.comparePassword(password)) return res.status(200).json(buildRes({message: 'Password is not matching the existing password'}));
 
+            userDetails.password = newPassword;
             userDetails.encryptNewPassword(userDetails);
             await userDetails.save();
 
