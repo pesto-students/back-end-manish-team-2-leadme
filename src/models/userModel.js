@@ -34,11 +34,24 @@ const User =  (sequelize) => {
             allowNull: true
         },
 
-    }, {timestamps: true})
+    }, {
+        timestamps: true,
+        defaultScope: {
+            attributes: {
+                exclude: ['password', 'createdAt', 'updatedAt']
+            },
+            order: [['id', 'DESC']]
+         },
+         scopes: {
+            all: {
+                attributes: {}
+            }
+         }
+    })
 
     User.associate = models => {
-        User.hasMany(models.loan , {foreignKey: 'borrowerUserId', as: 'borrower'});
-        User.hasMany(models.loan , {foreignKey: 'lenderUserId', as: 'lender'});
+        User.hasMany(models.loan , {foreignKey: 'borrowerUserId', as: 'borrowed'});
+        User.hasMany(models.loan , {foreignKey: 'lenderUserId', as: 'lent'});
         User.hasOne(models.wallet, {foreignKey: 'userId', as: 'wallet'});
     }
     User.addHook('beforeCreate', async function(user) {

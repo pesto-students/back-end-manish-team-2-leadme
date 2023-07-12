@@ -161,7 +161,6 @@ exports.postLoan = (req, res) => {
     const {loanId, installmentNo} = req.params;
     const loan = await Loan.findOne({ where: {id: loanId}, include: [{ association: 'rps'}]});
 
-    console.log(loan);
     if(!loan.id){
         return res.status(200).json(buildRes({message: 'No loan found'}));
     }

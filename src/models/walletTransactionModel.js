@@ -49,6 +49,11 @@ const walletTransaction =  (sequelize) => {
                 fields: ['referanceId'],
             },
         ],
+        defaultScope: {
+            attributes: {
+                exclude: ['createdAt', 'updatedAt']
+            },
+        },
     })
     
     walletTransaction.associate = function(models) {

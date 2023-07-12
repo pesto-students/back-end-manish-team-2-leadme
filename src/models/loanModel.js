@@ -97,6 +97,11 @@ const Loan =  (sequelize) => {
                 fields: ['loanStatus'],
             },
         ],
+        defaultScope: {
+            attributes: {
+                exclude: ['createdAt', 'updatedAt']
+            },
+        },
     })
     
     Loan.associate = function(models) {
