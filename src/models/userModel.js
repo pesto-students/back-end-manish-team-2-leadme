@@ -54,12 +54,12 @@ const User =  (sequelize) => {
         }
     });
 
-    User.addHook('beforeUpdate', function(user) {
+    User.prototype.encryptNewPassword = function (user) {
         if (user.password) {
             const salt = bcrypt.genSaltSync(10, 'a');
             user.password = bcrypt.hashSync(user.password, salt);
         }
-    });
+    };
     
     //create wallet
     User.addHook('afterCreate', async function(user) {

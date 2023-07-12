@@ -61,9 +61,13 @@ exports.updatePassword = (req, res) => {
                 return res.status(200).json(buildRes({message: 'No user found'}));
             } 
 
-            const { password } = req.body;
+            const { newPassword, password } = req.body;
 
-            userDetails.password= password;   
+            //compare passswords
+            if (userDetails.comparePassword(newPassword)) return res.status(200).json(buildRes({message: 'New password is matching existing password'}));
+
+            userDetails.password= newPassword;  
+            userDetails.encryptNewPassword(userDetails);
 
             await userDetails.save();
 
