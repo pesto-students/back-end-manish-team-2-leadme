@@ -9,6 +9,10 @@ router.get('/',paramsValidator, userController.getUser)
 
 router.put('/', paramsValidator, userController.updateUserData)
 
-router.put('/updatePassword/', paramsValidator, userController.updatePassword)
+router.put('/updatePassword/',[
+    check('password').notEmpty().withMessage('New password cannot be empty'),
+], paramsValidator, userController.updatePassword)
+
+router.get('/portfolio', paramsValidator, userController.portfolio)
 
 module.exports = router;    

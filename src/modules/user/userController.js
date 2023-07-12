@@ -26,7 +26,7 @@ exports.getUser = (req, res) => {
         })
         .catch(error => {
             errLogger(error)
-            res.status(500).json(buildRes({message: error.message}))
+            return res.status(500).json(buildRes({message: error.message}))
         })
 }
 
@@ -50,12 +50,12 @@ exports.updateUserData = (req, res) => {
         })
         .catch(error => {
             errLogger(error)
-            res.status(500).json(buildRes({message: error.message}))
+            return res.status(500).json(buildRes({message: error.message}))
         })
 }
 
 exports.updatePassword = (req, res) => {
-    User.findOne({ where: {id: req.user.id}})
+    User.findOne({ where: {id: 1}})
         .then(async userDetails => {
             if (!userDetails){
                 return res.status(200).json(buildRes({message: 'No user found'}));
@@ -73,6 +73,22 @@ exports.updatePassword = (req, res) => {
         })
         .catch(error => {
             errLogger(error)
-            res.status(500).json(buildRes({message: error.message}))
+            return res.status(500).json(buildRes({message: error.message}))
         })
+}
+
+exports.portfolio = async (req, res) => { 
+    const user = await User.findOne({ where: {id: req.user.id},
+            include: [
+                {association: 'lent', include: [{association: 'rps'}]},
+                {association: 'borrowed', include: [{association: 'rps'}]},
+                {association: 'wallet'},
+            ],
+    })
+    .catch(error => {
+        errLogger(error)
+       return  res.status(500).json(buildRes({message: error.message}))
+    });
+
+    return res.status(200).json(buildRes({success: true, user: user}));
 }
