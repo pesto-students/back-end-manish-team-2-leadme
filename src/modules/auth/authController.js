@@ -23,7 +23,7 @@ exports.register = (req, res) => {
             const data = { firstName, lastName, email, password, mobile } = req.body;
             const newUser = new User(data);
             newUser.save()
-                .then(user => res.status(200).json(buildRes({success: true, token: user.generateJWT()})))
+                .then(user => res.status(200).json(buildRes({success: true, token: user.generateJWT(), user: newUser})))
                 .catch(err => {
                     errLogger(err)
                     res.status(500).json(buildRes({message: err.message}))
