@@ -44,7 +44,7 @@ const Loan =  (sequelize) => {
         },
         interest: {
             type: DataTypes.FLOAT.UNSIGNED,
-            default: null,
+            defaultValue: null,
             allowNull: true,
         },
         interestRate: {
@@ -58,6 +58,11 @@ const Loan =  (sequelize) => {
         emiStartDate: {
             type: DataTypes.DATEONLY,
             allowNull: false,
+        },
+        investDate: {
+            type: DataTypes.DATEONLY,
+            allowNull: true,
+            defaultValue: null,
         },
         tenureMonths: {
             type: DataTypes.SMALLINT.UNSIGNED,

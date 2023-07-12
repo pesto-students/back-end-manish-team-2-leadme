@@ -2,6 +2,7 @@
     "dependencies": {
         "@sentry/node": "^7.55.2",
         "bcrypt": "^5.1.0",
+        "cloudinary": "^1.37.3",
         "cors": "^2.8.5",
         "dotenv": "^16.0.3",
         "express": "^4.18.2",
@@ -12,6 +13,7 @@
         "passport": "^0.6.0",
         "passport-jwt": "^4.0.1",
         "pg": "^8.11.0",
+        "puppeteer": "^20.8.1",
         "razorpay": "^2.9.0",
         "sequelize": "^6.32.1"
     },

@@ -1,5 +1,7 @@
 
 const db = require('../../models/index');
+const fs = require('fs');
+const path = require('path');
 const User = db.sequelize.models.user;
 const Wallet = db.sequelize.models.wallet;
 const Loan = db.sequelize.models.loan;
@@ -12,6 +14,7 @@ const { REQUESTED, ACTIVE, COMPLETED, EXPIRED, DISABLED } = require('../../confi
 
 const { Model, Op } = require('sequelize');
 const { buildRes, errLogger, round } = require('../../utils');
+const { generateAgreement, getDownloadUrl } = require('../../lib/agreementLib');
 
 /**
  * @route GET api/loan
@@ -142,9 +145,14 @@ exports.postLoan = (req, res) => {
         await borrowerWallet.update({amount: borrowerPostTxnBalance});
 
         //update loan
-        await loan.update({lenderUserId: req.user.id, loanStatus: ACTIVE});
+        await loan.update({lenderUserId: req.user.id, loanStatus: ACTIVE, investDate: new Date(loan.emiStartDate).toISOString().split('T')[0]});
 
         t.commit();
+
+        //generate agreement
+        const agreement = await generateAgreement(loan.id);
+        await loan.update({agreementUrl: agreement.data.agreementUrl})
+        
         return res.status(200).json(buildRes({success: true, message: 'Hurray! Investment is done'}));
     } catch (err) {
         await t.rollback();
@@ -187,7 +195,7 @@ exports.postLoan = (req, res) => {
     }
 
     const t = await db.sequelize.transaction();
-    
+
     try {
         //make repayment
         const lenderPostTxnBalance = round(lenderWallet.amount + installmentAmount, 2);
@@ -234,4 +242,25 @@ exports.postLoan = (req, res) => {
         errLogger(err);
         return res.status(500).json(buildRes({message: err.message}));
     }
+};
+
+exports.agreement = async (req, res) => {
+    const loan = await Loan.findOne({ where: {id: req.params.loanId}});
+
+    //only borrower & lender can see agreement
+    if(loan.borrowerUserId != req.user.id && loan.lenderUserId != req.user.id){
+        return res.status(200).json(buildRes({message: 'You are Unauthorized to access agreement'}));
+    }
+
+    if(!loan.agreementUrl){
+        return res.status(200).json(buildRes({message: 'Agreement not generated'}));
+    }
+        
+    //render?
+    if(req.query.render == 1){
+        res.contentType("application/pdf");
+        return res.sendFile(loan.agreementUrl);
+    }
+    
+    return res.status(200).json(buildRes({success: true, pdf: pdf}));
 };
