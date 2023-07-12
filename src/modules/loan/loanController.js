@@ -9,6 +9,8 @@ const gatewayTransaction = db.sequelize.models.gatewayTransaction;
 const walletTransaction = db.sequelize.models.walletTransaction;
 const repaymentSchedule = db.sequelize.models.repaymentSchedule;
 
+
+const { sendEmail, emailData } = require("../../config/mailer");
 const { DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW, INCOME } = require('../../config/constants').walletTransactionTypes;
 const { REQUESTED, ACTIVE, COMPLETED, EXPIRED, DISABLED } = require('../../config/constants').loanStatus;
 
@@ -58,7 +60,15 @@ exports.postLoan = (req, res) => {
     const newLoan = new Loan(data);
 
     newLoan.save()
-        .then(loan => res.status(200).json(buildRes({success: true, loan: loan})))
+        .then(loan => {
+            //send email
+            sendEmail({
+                to: req.user.email,
+                subject: emailData.subject.loanRequest,
+                body: emailData.body.loanRequest,
+            })
+            res.status(200).json(buildRes({success: true, loan: loan}))
+        })
         .catch(err => {
             errLogger(err)
             res.status(500).json(buildRes({message: err.message}))
@@ -153,6 +163,18 @@ exports.postLoan = (req, res) => {
         const agreement = await generateAgreement(loan.id);
         await loan.update({agreementUrl: agreement.data.agreementUrl})
         
+        // send email B
+        // sendEmail({
+        //     to: loan.borrowerUserId.email,
+        //     subject: emailData.subject.loanRequest,
+        //     body: emailData.body.loanRequest,
+        // })
+        // send email L
+        sendEmail({
+            to: req.user.email,
+            subject: emailData.subject.investNowLender,
+            body: emailData.body.investNowLender,
+        })
         return res.status(200).json(buildRes({success: true, message: 'Hurray! Investment is done'}));
     } catch (err) {
         await t.rollback();
@@ -236,6 +258,18 @@ exports.postLoan = (req, res) => {
         await loan.update({paidAmount: paidAmount});
 
         t.commit();
+        // send email B
+        sendEmail({
+            to: req.user.email,
+            subject: emailData.subject.emiPayBorrower,
+            body: emailData.body.emiPayBorrower,
+        })
+        // send email L
+        // sendEmail({
+        //     to: loan.lenderUserId.email,
+        //     subject: emailData.subject.emiPayLender,
+        //     body: emailData.body.emiPayLender,
+        // })
         return res.status(200).json(buildRes({success: true, message: 'Repayment done successfully'}));
     } catch (err) {
         await t.rollback();

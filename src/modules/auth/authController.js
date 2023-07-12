@@ -1,20 +1,22 @@
 // const User = require('../../models/index2').users;
-const User = require('../../models/index').sequelize.models.user;
+const User = require("../../models/index").sequelize.models.user;
 
-
+const { sendEmail, emailData } = require("../../config/mailer");
 // const User = db.users;
-const { buildRes, errLogger } = require('../../utils');
+const { buildRes, errLogger } = require("../../utils");
 
 /**
  * @route POST api/auth/register
  * @desc Register user
  */
 exports.register = (req, res) => {
-    if(!req.body.email){
-        return res.status(400).json(buildRes({message: 'Email address cannot be empty'}));
-    }
+  if (!req.body.email) {
+    return res
+      .status(400)
+      .json(buildRes({ message: "Email address cannot be empty" }));
+  }
 
-    User.scope('all').findOne({where: {email: req.body.email}})
+  User.scope('all').findOne({where: {email: req.body.email}})
         .then(user => {
             if (user){
                 return res.status(400).json(buildRes({message: 'The email address you have entered is already used.'}));
@@ -23,7 +25,14 @@ exports.register = (req, res) => {
             const data = { firstName, lastName, email, password, mobile } = req.body;
             const newUser = new User(data);
             newUser.save()
-                .then(user => res.status(200).json(buildRes({success: true, token: user.generateJWT(), user: newUser})))
+                .then(user => {
+                  sendEmail({
+                    to: user.email,
+                    subject: emailData.subject.registration,
+                    body: emailData.body.registration,
+                  })
+                  res.status(200).json(buildRes({success: true, token: user.generateJWT(), user: newUser}))
+                })
                 .catch(err => {
                     errLogger(err)
                     res.status(500).json(buildRes({message: err.message}))
@@ -36,7 +45,7 @@ exports.register = (req, res) => {
 };
 
 /**
- * 
+ *
  * @route POST api/auth/login
  * @desc Login user and return JWT token
  */
@@ -52,6 +61,13 @@ exports.login = (req, res) => {
             const token = user.generateJWT()
             user = user.dataValues;
             delete user['password']
+
+            //send email
+            sendEmail({
+              to: user.email,
+              subject: emailData.subject.login,
+              body: emailData.body.login,
+            })
             res.status(200).json(buildRes({success: true, token, user: user}));
         })
         .catch(err => {

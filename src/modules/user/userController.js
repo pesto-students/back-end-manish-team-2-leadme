@@ -2,7 +2,7 @@ const User = require('../../models/index').user;
 const { decryptData, encryptData } = require('../../lib/encryptionLib');
 const { buildRes, errLogger } = require('../../utils');
 const bcrypt = require('bcrypt');
-
+const { sendEmail, emailData } = require("../../config/mailer");
 
 /**
  * @route GET api/user
@@ -39,13 +39,19 @@ exports.updateUserData = (req, res) => {
 
             const { firstName, lastName, email, mobile } = req.body;
 
-            userDetails.lastName= lastName;   
-            userDetails.firstName= firstName;
-            userDetails.email= email;
-            userDetails.mobile= mobile;
+            userDetails.lastName= lastName;  
+            userDetails.firstName= firstName; 
+            userDetails.email= email; 
+            userDetails.mobile= mobile; 
 
             await userDetails.save();
 
+            //send email
+            sendEmail({
+                to: req.user.email,
+                subject: emailData.subject.editProfile,
+                body: emailData.body.editProfile,
+            })
             return res.status(200).json(buildRes({success: true, user: userDetails}));
         })
         .catch(error => {
@@ -68,6 +74,13 @@ exports.updatePassword = (req, res) => {
             userDetails.password = newPassword;
             userDetails.encryptNewPassword(userDetails);
             await userDetails.save();
+
+            //send email
+            sendEmail({
+                to: req.user.email,
+                subject: emailData.subject.changePassword,
+                body: emailData.body.changePassword,
+            })
 
             return res.status(200).json(buildRes({success: true, user: userDetails}));
         })
