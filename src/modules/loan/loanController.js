@@ -177,7 +177,7 @@ exports.postLoan = (req, res) => {
         return res.status(200).json(buildRes({message: "Loan is not in Active state"}));
     }
 
-    if(loan.borrowerUserId == req.user.id){
+    if(loan.borrowerUserId != req.user.id){
         return res.status(200).json(buildRes({message: "You cant repay someone else loan"}));
     }
 
