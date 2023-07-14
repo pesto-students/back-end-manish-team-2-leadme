@@ -7,7 +7,7 @@ const razorpay = require('../../config/razorpay');
 const { buildRes, errLogger, round } = require('../../utils');
 const {CREATED, FAILED, SUCCESS} = require('../../config/constants').gatewayTransaction.status;
 const {maxVerifyAttemptCount} = require('../../config/constants').razorpay;
-
+const { sendEmail, emailData } = require("../../config/mailer");
 
 /**
  * @route GET api/user/wallet
@@ -82,6 +82,13 @@ exports.getWallet = (req, res) => {
             email: req.user.email,
         }
     }
+
+    // send email
+    sendEmail({
+        to: req.user.email,
+        subject: emailData.subject.addMoney,
+        body: emailData.body.addMoney,
+    })
     return res.status(200).json(buildRes({success: true, order: resObj}));
 };
 
@@ -134,6 +141,7 @@ exports.getWallet = (req, res) => {
     }
     
     await gatewayTxn.update({responseJson: order, verifyAttemptCount: verifyAttemptCount});
+    
     return res.status(200).json(buildRes({message: 'Deposit order has not been fullfilled!'}));
 };
 
