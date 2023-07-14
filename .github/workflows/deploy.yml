@@ -32,4 +32,13 @@ jobs:
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
         password: ${{ secrets.PASSWORD }}
-        script: node src/server.js
+        script: npm install &&  sudo fuser -k 8080/tcp
+
+    - name: Executing remote command
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        port: ${{ secrets.PORT }}
+        password: ${{ secrets.PASSWORD }}
+        script: nohup node ~/lendme-backend/src/server.js 1> lendme.log 2> lendme.err &
