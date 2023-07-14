@@ -252,15 +252,17 @@ exports.agreement = async (req, res) => {
         return res.status(200).json(buildRes({message: 'You are Unauthorized to access agreement'}));
     }
 
-    if(!loan.agreementUrl){
-        return res.status(200).json(buildRes({message: 'Agreement not generated'}));
-    }
+    // if(!loan.agreementUrl){
+    //     return res.status(200).json(buildRes({message: 'Agreement not generated'}));
+    // }
+
+    const agreement = await generateAgreement(loan.id);
+    const pdf = fs.readFileSync(agreement.data.agreementUrl, 'utf-8');
         
     //render?
     if(req.query.render == 1){
         res.contentType("application/pdf");
-        return res.sendFile(loan.agreementUrl);
+        return res.sendFile(agreement.data.agreementUrl);
     }
-    
     return res.status(200).json(buildRes({success: true, pdf: pdf}));
 };
