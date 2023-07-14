@@ -32,7 +32,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
         password: ${{ secrets.PASSWORD }}
-        script: cd ~/lendme-backend && npm install && sudo fuser -k 8080/tcp
+        script: cd ~/lendme-backend && sudo fuser -k 8080/tcp &&  npm install 
 
     - name: Executing remote command
       uses: appleboy/ssh-action@v0.1.10
