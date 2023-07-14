@@ -31,7 +31,7 @@ exports.getUser = (req, res) => {
 }
 
 exports.updateUserData = (req, res) => {     
-    User.findOne({ where: {id: req.user.id}})
+    User.scope('all').findOne({ where: {id: req.user.id}})
         .then(async userDetails => {
             if (!userDetails){
                 return res.status(200).json(buildRes({message: 'No user found'}));
@@ -55,7 +55,7 @@ exports.updateUserData = (req, res) => {
 }
 
 exports.updatePassword = (req, res) => {
-    User.findOne({ where: {id: req.user.id}})
+    User.scope('all').findOne({ where: {id: req.user.id}})
         .then(async userDetails => {
             if (!userDetails){
                 return res.status(200).json(buildRes({message: 'No user found'}));
