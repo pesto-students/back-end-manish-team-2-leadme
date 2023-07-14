@@ -25,8 +25,8 @@ Test Credentials:
 
 ### Installation
 - Fork or directly clone this repository to your local machine
-- Use the npm install command to install dependencies
-- Once the dependencies are finished installing, use the npm start command inside the root directory of branch main to open the app in your local browser of choice
+- Use the `npm install` command to install dependencies
+- Once the dependencies are finished installing, use the `npm start` command inside the root directory of branch main to open the app in your local browser of choice
     
 ### Technology Stack
 
