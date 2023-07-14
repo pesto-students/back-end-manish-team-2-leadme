@@ -264,7 +264,7 @@ exports.postLoan = (req, res) => {
             subject: emailData.subject.emiPayBorrower,
             body: emailData.body.emiPayBorrower,
         })
-        // send email L
+        // send email not working here L
         // sendEmail({
         //     to: loan.lenderUserId.email,
         //     subject: emailData.subject.emiPayLender,
