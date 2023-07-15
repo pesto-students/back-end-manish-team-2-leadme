@@ -101,7 +101,7 @@ exports.postLoan = (req, res) => {
  * @desc invest in a loan
  */
  exports.invest = async (req, res) => {
-    const loan = await Loan.findOne({ where: {id: req.params.loanId}});
+    const loan = await Loan.findOne({ where: {id: req.params.loanId}, include: [{ association: 'borrower'}]});
     if(!loan.id){
         return res.status(200).json(buildRes({message: 'No loan found'}));
     }
@@ -160,15 +160,15 @@ exports.postLoan = (req, res) => {
         t.commit();
 
         //generate agreement
-        const agreement = await generateAgreement(loan.id);
-        await loan.update({agreementUrl: agreement.data.agreementUrl})
+        // const agreement = await generateAgreement(loan.id);
+        // await loan.update({agreementUrl: agreement.data.agreementUrl})
         
         // send email B
-        // sendEmail({
-        //     to: loan.borrowerUserId.email,
-        //     subject: emailData.subject.loanRequest,
-        //     body: emailData.body.loanRequest,
-        // })
+        sendEmail({
+            to: loan.borrower.email,
+            subject: emailData.subject.loanRequest,
+            body: emailData.body.loanRequest,
+        })
         // send email L
         sendEmail({
             to: req.user.email,
@@ -189,7 +189,7 @@ exports.postLoan = (req, res) => {
  */
  exports.repayment = async (req, res) => {
     const {loanId, installmentNo} = req.params;
-    const loan = await Loan.findOne({ where: {id: loanId}, include: [{ association: 'rps'}]});
+    const loan = await Loan.findOne({ where: {id: loanId}, include: [{ association: 'rps'}, { association: 'lender'}]});
 
     if(!loan?.id){
         return res.status(200).json(buildRes({message: 'No loan found'}));
@@ -274,11 +274,11 @@ exports.postLoan = (req, res) => {
             body: emailData.body.emiPayBorrower,
         })
         // send email not working here L
-        // sendEmail({
-        //     to: loan.lenderUserId.email,
-        //     subject: emailData.subject.emiPayLender,
-        //     body: emailData.body.emiPayLender,
-        // })
+        sendEmail({
+            to: loan.lender.email,
+            subject: emailData.subject.emiPayLender,
+            body: emailData.body.emiPayLender,
+        })
         return res.status(200).json(buildRes({success: true, message: 'Repayment done successfully'}));
     } catch (err) {
         await t.rollback();
