@@ -191,7 +191,7 @@ exports.postLoan = (req, res) => {
     const {loanId, installmentNo} = req.params;
     const loan = await Loan.findOne({ where: {id: loanId}, include: [{ association: 'rps'}]});
 
-    if(!loan.id){
+    if(!loan?.id){
         return res.status(200).json(buildRes({message: 'No loan found'}));
     }
 
@@ -203,8 +203,11 @@ exports.postLoan = (req, res) => {
         return res.status(200).json(buildRes({message: "You cant repay someone else loan"}));
     }
 
-    const installment = loan.rps.find(r => r.installment = installmentNo);
-    if(installment.isPaid){
+    const installment = loan.rps.find(r => r.installment == installmentNo);
+    if(!installment){
+        return res.status(404).json(buildRes({message: "Installment not found"}));
+    }
+    if(installment?.isPaid === true){
         return res.status(200).json(buildRes({message: "Installment already paid"}));
     }
 
@@ -256,6 +259,12 @@ exports.postLoan = (req, res) => {
         //update loan
         const paidAmount = round(installmentAmount + loan.paidAmount, 2);
         await loan.update({paidAmount: paidAmount});
+
+        //loan closed?
+        const totalDueAmount = round(loan.amount + loan.interest, 2);
+        if(paidAmount >= totalDueAmount){
+            await loan.update({loanStatus: COMPLETED});
+        }
 
         t.commit();
         // send email B
