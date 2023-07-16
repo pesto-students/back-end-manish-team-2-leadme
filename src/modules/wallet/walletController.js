@@ -146,4 +146,13 @@ exports.getWallet = (req, res) => {
 };
 
 
-
+/**
+ * @route POST /api/user/wallet/deposit/make-me-millionaire 
+ * @desc demo add million ruppes
+ */
+ exports.millionaire = async (req, res) => {
+    const wallet = await Wallet.findOne({where: {userId: req.user.id}});
+    const amount = round(wallet.amount + 1000000, 2);
+    await wallet.update({amount: amount});
+    return res.status(200).json(buildRes({success: true, message: 'Million added!'}));
+};

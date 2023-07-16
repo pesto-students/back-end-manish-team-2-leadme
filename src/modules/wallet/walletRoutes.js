@@ -15,5 +15,8 @@ router.get('/deposit/status/:orderId', [
     check('orderId').notEmpty().withMessage("order id is missing"),
 ], paramsValidator, walletController.getDepositStatus)
 
+router.post('/deposit/make-me-millionaire', [
+], paramsValidator, walletController.millionaire)
+
 
 module.exports = router;
