@@ -14,8 +14,8 @@ const { sendEmail, emailData } = require("../../config/mailer");
 const { DEPOSIT, WITHDRAWAL, REPAYMENT, INVEST, BORROW, INCOME } = require('../../config/constants').walletTransactionTypes;
 const { REQUESTED, ACTIVE, COMPLETED, EXPIRED, DISABLED } = require('../../config/constants').loanStatus;
 
-const { Model, Op } = require('sequelize');
-const { buildRes, errLogger, round } = require('../../utils');
+const { Model, Op, where } = require('sequelize');
+const { buildRes, errLogger, round, methodReturn } = require('../../utils');
 const { generateAgreement, getDownloadUrl } = require('../../lib/agreementLib');
 
 /**
@@ -25,17 +25,13 @@ const { generateAgreement, getDownloadUrl } = require('../../lib/agreementLib');
 exports.getLoan = (req, res) => {
     let offset = req.query?.offset ?? 0;
     let limit = req.query?.limit ?? 10;
-    const where = {};
 
-    if(req.query?.amountGte) {
-        where.amount = {
-            [Op.and]: {
-                [Op.gte]: req.query?.amountGte ?? 0,
-            }
-        }
+    const where = buildWhere(req);
+    if(!where?.status){
+        res.status(400).json(buildRes({message: where.message}));
     }
 
-    Loan.findAll({limit: limit, offset: offset, where: where, include:[
+    Loan.findAll({limit: limit, offset: offset, where: where.data, include:[
         { model: User, as: 'borrower'}, { model: User, as: 'lender'}
     ]})
         .then(loans => {
@@ -309,3 +305,58 @@ exports.agreement = async (req, res) => {
     }
     return res.status(200).json(buildRes({success: true, pdf: pdf}));
 };
+
+
+//Build query for getLoan()
+const buildWhere = (req) => {
+    if(req.query?.amountLte < req.query?.amountGte){
+        return methodReturn(false, 'amountGte cannot be greater than amountLte');
+    }
+    if(req.query?.interestLte < req.query?.interestGte){
+        return methodReturn(false, 'interestGte cannot be greater than interestLte');
+    }
+    if(req.query?.tenureLte < req.query?.tenureGte){
+        return methodReturn(false, 'tenureGte cannot be greater than tenureLte');
+    }
+
+    const amountFilter = {};
+    if(req.query?.amountLte) {
+        amountFilter[Op.lte] = req.query?.amountLte ?? 0
+    }
+    if(req.query?.amountGte) {
+        amountFilter[Op.gte] = req.query?.amountGte ?? 0
+    }
+    
+    const interestFilter = {};
+    if(req.query?.interestLte) {
+        interestFilter[Op.lte] = req.query?.interestLte ?? 0
+    }
+    if(req.query?.interestGte) {
+        interestFilter[Op.gte] = req.query?.interestGte ?? 0
+    }
+
+    const tenureFilter = {};
+    if(req.query?.tenureLte) {
+        tenureFilter[Op.lte] = req.query?.tenureLte ?? 0
+    }
+    if(req.query?.tenureGte) {
+        tenureFilter[Op.gte] = req.query?.tenureGte ?? 0
+    }
+
+    const where = {
+        amount: {
+            [Op.and]: amountFilter
+        },
+        interestRate: {
+            [Op.and]: interestFilter
+        },
+        tenureMonths: {
+            [Op.and]: tenureFilter
+        },
+        // loanStatus: {
+        //    [Op.eq]: REQUESTED
+        // }
+    }
+
+    return methodReturn(true, 'Query build', where);
+}

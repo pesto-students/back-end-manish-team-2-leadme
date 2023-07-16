@@ -23,7 +23,8 @@
         "sequelize-cli": "^6.6.1"
     },
     "scripts": {
-        "start": "nodemon src/server.js"
+        "start": "nodemon src/server.js",
+        "start-http": "nodemon src/http-server.js"
     },
     "name": "lendme-backend",
     "version": "1.0.0",
