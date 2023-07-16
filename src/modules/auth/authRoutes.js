@@ -11,7 +11,9 @@ router.get('/', (req, res) => {
 
 router.post('/register', [
     check('email').not().isEmpty().isEmail().withMessage('Enter a valid email address'),
-    check('password').not().isEmpty().isLength({min: 6}).withMessage('Must be at least 6 chars long')
+    check('password').not().isEmpty().isLength({min: 6}).withMessage('Must be at least 6 chars long'),
+    check('aadhar').not().isEmpty().isNumeric().withMessage('Enter a valid aadhar number'),
+    check('pan').not().isEmpty().isAlphanumeric().withMessage('Enter a valid pan number')
 ], paramsValidator, Auth.register);
 
 
